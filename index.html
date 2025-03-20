@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Web App</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&family=Quicksand:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="library.html">Library</a></li>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="register.html"></a></li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1>Music Web App</h1>
+    </header>
+
+    <section id="audio-player">
+        <h2>Enjoy Music</h2>
+        <div id="music-animation">
+            <img src="images/—Pngtree—music icon_4419071.png" alt="Music" id="music-img">
+        </div>
+        <audio controls>
+            <source src="music/sample.mp3" type="audio/mp3">
+            Your browser does not support the audio element.
+        </audio>
+    </section>
+
+    <section id="upload">
+        <h2>Upload Music</h2>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="text" id="song-name" placeholder="Enter song name" required>
+            <input type="file" id="music-file" accept="audio/*" required>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="upload-status"></div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Music Web App</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

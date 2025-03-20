@@ -1,0 +1,337 @@
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f8f8; /* Off-white background */
+    color: #444; /* Dark gray text */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+/* Classic Typography */
+h1, h2, h3 {
+    font-family: 'Playfair Display', serif; /* Classic serif font */
+    color: #6c5b7b; /* Muted purple for headings */
+    font-weight: 500;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    
+}
+
+h2 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 1rem;
+    color: #666; /* Medium gray for text */
+}
+
+/* Navigation Bar */
+nav {
+    width: 100%;
+    background-color: #fff; /* White background */
+    padding: 10px 0;
+    margin: 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+nav ul {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    list-style: none;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #6c5b7b; /* Muted purple for links */
+    font-weight: 500;
+    padding: 10px 15px;
+    border-radius: 8px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+nav ul li a:hover {
+    background-color: #f0f0f0; /* Light gray on hover */
+    color: #355c7d; /* Muted blue on hover */
+}
+
+/* Header Section */
+header {
+    background-color: #fff; /* White background */
+    color: #444; /* Dark gray text */
+    padding: 40px;
+    width: 100%;
+    max-width: 800px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    margin-bottom: 30px;
+}
+
+
+
+/* Audio Player Section */
+#audio-player {
+    background-color: #fff; /* White background */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    margin-top: 20px;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
+
+audio {
+    width: 100%;
+    border-radius: 10px;
+    outline: none;
+}
+
+/* Upload Section */
+#upload {
+    background-color: #fff; /* White background */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    width: 100%;
+    max-width: 600px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+#upload-form input {
+    padding: 12px;
+    width: 80%;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd; /* Light gray border */
+    transition: border-color 0.3s;
+}
+
+#upload-form input:focus {
+    border-color: #c06c84; /* Soft pink on focus */
+    outline: none;
+}
+
+button {
+    padding: 12px 20px;
+    background-color: #c06c84; /* Soft pink button */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #b3577a; /* Darker pink on hover */
+}
+
+#upload-status {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #666; /* Medium gray for status text */
+}
+
+/* Footer */
+footer {
+    margin-top: 140px;
+    text-align: center;
+    font-size: 14px;
+    color: #666; /* Medium gray for footer text */
+}
+
+/* Music Animation Section */
+#music-animation {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#music-img {
+    width: 150px;
+    height: 150px;
+    animation: bounce 1s ease-in-out infinite;
+}
+
+/* Bounce Animation */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px); /* Smaller bounce */
+    }
+}
+
+/* Music Library Section */
+#music-library {
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 40px;
+}
+
+#music-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.music-item {
+    background-color: #fff; /* White background */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    text-align: center;
+    width: 150px;
+    padding: 20px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.music-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow on hover */
+}
+
+.music-item img {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.music-item h3 {
+    font-size: 18px;
+    color: #6c5b7b; /* Muted purple for titles */
+    margin-bottom: 5px;
+}
+
+.music-item p {
+    color: #666; /* Medium gray for text */
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.music-item button {
+    background-color: #c06c84; /* Soft pink button */
+    color: white;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.music-item button:hover {
+    background-color: #b3577a; /* Darker pink on hover */
+}
+
+/* Login and Register Pages */
+.login-container, .register-container {
+    background-color: #fff; /* White background */
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    margin: 50px auto; /* Center the container with more top margin */
+}
+
+.login-container h1, .register-container h2 {
+    color: #6c5b7b; /* Muted purple for headings */
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.login-container p, .register-container p {
+    color: #666; /* Medium gray for text */
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.input-container {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-container label {
+    font-size: 14px;
+    color: #444; /* Dark gray for labels */
+}
+
+.input-container input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd; /* Light gray border */
+    outline: none;
+    font-size: 16px;
+    margin-top: 8px;
+    transition: border-color 0.3s;
+}
+
+.input-container input:focus {
+    border-color: #c06c84; /* Soft pink on focus */
+}
+
+.login-btn, .register-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: #c06c84; /* Soft pink button */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-btn:hover, .register-container button:hover {
+    background-color: #b3577a; /* Darker pink on hover */
+}
+
+.register-link {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666; /* Medium gray for text */
+}
+
+.register-link a {
+    color: #6c5b7b; /* Muted purple for links */
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+    color: #355c7d; /* Muted blue on hover */
+}

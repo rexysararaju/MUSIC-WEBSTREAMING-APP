@@ -3,47 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Web App</title>
+    <title>Melodify - Your Personal Music Library</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&family=Quicksand:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="library.html">Library</a></li>
-            <li><a href="login.html">Login</a></li>
-            <li><a href="register.html"></a></li>
-        </ul>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="logo">Melodify</a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="active"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="library.html"><i class="fas fa-music"></i> Library</a></li>
+                <li><a href="discover.html"><i class="fas fa-compass"></i> Discover</a></li>
+                <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                <li><a href="register.html"><i class="fas fa-user-plus"></i> Register</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
     </nav>
 
-    <header>
-        <h1>Music Web App</h1>
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Your Personal Music Universe</h1>
+            <p>Stream, upload, and organize your favorite tracks anywhere, anytime</p>
+            <div class="hero-buttons">
+                <a href="register.html" class="btn-primary">Get Started</a>
+                <a href="discover.html" class="btn-secondary">Explore Music</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="images/ai-generated-7872856_1280.jpg" alt="Music illustration">
+        </div>
     </header>
 
-    <section id="audio-player">
-        <h2>Enjoy Music</h2>
-        <div id="music-animation">
-            <img src="images/—Pngtree—music icon_4419071.png" alt="Music" id="music-img">
+    <!-- Features Section -->
+    <section class="features">
+        <div class="section-header">
+            <h2>Why Choose Melodify?</h2>
+            <p>Experience music like never before</p>
         </div>
-        <audio controls>
-            <source src="music/sample.mp3" type="audio/mp3">
-            Your browser does not support the audio element.
-        </audio>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>Upload Your Music</h3>
+                <p>Add your personal collection to the cloud and access it from any device.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-headphones"></i>
+                <h3>Personalized Library</h3>
+                <p>Your music, organized your way with custom playlists and favorites.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-search"></i>
+                <h3>Discover New Music</h3>
+                <p>Find new artists and tracks based on your listening habits.</p>
+            </div>
+        </div>
     </section>
 
-    <section id="upload">
-        <h2>Upload Music</h2>
-        <form id="upload-form" enctype="multipart/form-data">
-            <input type="text" id="song-name" placeholder="Enter song name" required>
-            <input type="file" id="music-file" accept="audio/*" required>
-            <button type="submit">Upload</button>
-        </form>
-        <div id="upload-status"></div>
+    <!-- Now Playing Preview -->
+    <section class="now-playing-preview">
+        <div class="player-container">
+            <div class="album-art">
+                <img src="assets/images/album-placeholder.jpg" alt="Album Art">
+            </div>
+            <div class="player-info">
+                <h3>Currently Trending</h3>
+                <h4>Summer Vibes</h4>
+                <p>The Melodify Community</p>
+                <audio controls>
+                    <source src="assets/audio/sample.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+        </div>
     </section>
 
-    <footer>
-        <p>&copy; 2025 Music Web App</p>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="index.html" class="logo">Melodify</a>
+                <p>Your personal music library in the cloud</p>
+            </div>
+            <div class="footer-links">
+                <div class="link-group">
+                    <h4>Explore</h4>
+                    <ul>
+                        <li><a href="library.html">Library</a></li>
+                        <li><a href="discover.html">Discover</a></li>
+                        <li><a href="playlists.html">Playlists</a></li>
+                    </ul>
+                </div>
+                <div class="link-group">
+                    <h4>Account</h4>
+                    <ul>
+                        <li><a href="login.html">Login</a></li>
+                        <li><a href="register.html">Register</a></li>
+                        <li><a href="reset-password.html">Reset Password</a></li>
+                    </ul>
+                </div>
+                <div class="link-group">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="terms.html">Terms</a></li>
+                        <li><a href="privacy.html">Privacy</a></li>
+                        <li><a href="guidelines.html">Content Guidelines</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Melodify. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
     </footer>
 
     <script src="script.js"></script>

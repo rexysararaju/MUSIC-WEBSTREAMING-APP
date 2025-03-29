@@ -1,646 +1,418 @@
-// Main Application Module
-const Melodify = (function() {
-    // App State
-    const state = {
-        currentUser: null,
-        isAdmin: false,
-        musicLibrary: [],
-        currentTrack: null,
-        isPlaying: false,
-        audioPlayer: new Audio(),
-        playlists: []
-    };
+// Music App Core Functionality
+const MusicApp = {
+    // Initialize the application
+    init() {
+        this.setupDOMReferences();
+        this.setupEventListeners();
+        this.loadLibrary();
+        this.setupAudioPlayer();
+        this.exposeMethods();
+        this.checkAuthState();
+    },
 
     // DOM Elements
-    const elements = {
-        // Will be initialized in init()
-    };
+    elements: {
+        uploadForm: null,
+        libraryContainer: null,
+        audioPlayer: null,
+        nowPlayingBar: null,
+        playBtn: null,
+        progressBar: null,
+        volumeControl: null,
+        currentTimeDisplay: null,
+        totalTimeDisplay: null
+    },
 
-    // Initialize the application
-    function init() {
-        setupDOMReferences();
-        setupEventListeners();
-        loadInitialData();
-        checkAuthState();
-    }
+    // App State
+    state: {
+        currentTrack: null,
+        isPlaying: false,
+        isLoading: false,
+        library: [],
+        currentUser: null
+    },
 
-    // Set up DOM references
-    function setupDOMReferences() {
-        elements.navbar = document.querySelector('.navbar');
-        elements.mainContent = document.querySelector('main');
-        elements.audioPlayer = document.getElementById('audio-player');
-        elements.nowPlayingBar = document.querySelector('.now-playing-bar');
-        elements.playBtn = document.querySelector('.play-btn');
-        elements.progressBar = document.querySelector('.progress-bar .progress');
-        elements.currentTime = document.querySelector('.time-current');
-        elements.totalTime = document.querySelector('.time-total');
-        elements.volumeSlider = document.querySelector('.volume-slider');
-        elements.uploadModal = document.getElementById('upload-modal');
-        elements.uploadForm = document.getElementById('upload-form');
-        elements.libraryGrid = document.querySelector('.music-library-grid');
-    }
+    // Setup DOM references
+    setupDOMReferences() {
+        this.elements = {
+            uploadForm: document.getElementById('upload-form'),
+            libraryContainer: document.querySelector('.music-library-grid'),
+            audioPlayer: new Audio(),
+            nowPlayingBar: document.querySelector('.now-playing-bar'),
+            playBtn: document.getElementById('play-btn'),
+            progressBar: document.querySelector('.progress-bar'),
+            progressContainer: document.querySelector('.progress-container'),
+            volumeControl: document.querySelector('.volume-control'),
+            currentTimeDisplay: document.querySelector('.time-current'),
+            totalTimeDisplay: document.querySelector('.time-total')
+        };
+    },
 
-    // Set up event listeners
-    function setupEventListeners() {
-        // Audio player events
-        elements.audioPlayer.addEventListener('timeupdate', updateProgressBar);
-        elements.audioPlayer.addEventListener('ended', playNextTrack);
-        elements.audioPlayer.addEventListener('loadedmetadata', updateTrackDuration);
+    // Setup event listeners
+    setupEventListeners() {
+        // Upload form
+        if (this.elements.uploadForm) {
+            this.elements.uploadForm.addEventListener('submit', (e) => this.handleUpload(e));
+        }
 
-        // Player control events
-        if (elements.playBtn) {
-            elements.playBtn.addEventListener('click', togglePlay);
+        // Play button
+        if (this.elements.playBtn) {
+            this.elements.playBtn.addEventListener('click', () => this.togglePlayback());
+        }
+
+        // Progress bar seeking
+        if (this.elements.progressContainer) {
+            this.elements.progressContainer.addEventListener('click', (e) => this.seekTrack(e));
         }
 
         // Volume control
-        if (elements.volumeSlider) {
-            elements.volumeSlider.addEventListener('input', setVolume);
+        if (this.elements.volumeControl) {
+            this.elements.volumeControl.addEventListener('input', (e) => this.setVolume(e));
         }
+    },
 
-        // Upload modal
-        if (document.getElementById('upload-btn')) {
-            document.getElementById('upload-btn').addEventListener('click', openUploadModal);
-        }
-
-        if (document.querySelector('.close-modal')) {
-            document.querySelector('.close-modal').addEventListener('click', closeUploadModal);
-        }
-
-        // Register form
-        if (document.getElementById('register-form')) {
-            document.getElementById('register-form').addEventListener('submit', handleRegister);
-        }
-
-        // Login form
-        if (document.getElementById('login-form')) {
-            document.getElementById('login-form').addEventListener('submit', handleLogin);
-        }
-
-        // Password toggle
-        document.querySelectorAll('.toggle-password').forEach(button => {
-            button.addEventListener('click', togglePasswordVisibility);
-        });
-
-        // File upload display
-        if (document.getElementById('song-file')) {
-            document.getElementById('song-file').addEventListener('change', displayFileName);
-        }
-    }
-
-    // Load initial data from localStorage
-    function loadInitialData() {
-        const savedLibrary = localStorage.getItem('musicLibrary');
-        const savedUsers = localStorage.getItem('users');
-        const savedPlaylists = localStorage.getItem('playlists');
-        const currentUser = localStorage.getItem('currentUser');
-
-        if (savedLibrary) {
-            state.musicLibrary = JSON.parse(savedLibrary);
-        }
-
-        if (savedPlaylists) {
-            state.playlists = JSON.parse(savedPlaylists);
-        }
-
-        if (currentUser) {
-            state.currentUser = JSON.parse(currentUser);
-            state.isAdmin = state.currentUser.role === 'admin';
-        }
-    }
-
-    // Check authentication state
-    function checkAuthState() {
-        if (state.currentUser) {
-            updateUIForLoggedInUser();
-        } else {
-            updateUIForGuest();
-        }
-    }
-
-    // Update UI for logged in user
-    function updateUIForLoggedInUser() {
-        // Show user-specific elements
-        document.querySelectorAll('.user-only').forEach(el => el.style.display = 'block');
-        document.querySelectorAll('.guest-only').forEach(el => el.style.display = 'none');
-
-        // Update user info in navbar
-        if (document.querySelector('.user-avatar')) {
-            document.querySelector('.user-avatar').src = state.currentUser.avatar || 'assets/images/user-default.jpg';
-            document.querySelector('.user-btn span').textContent = state.currentUser.username;
-        }
-
-        // Load user library if on library page
-        if (window.location.pathname.includes('library.html')) {
-            renderMusicLibrary();
-        }
-    }
-
-    // Update UI for guest
-    function updateUIForGuest() {
-        document.querySelectorAll('.user-only').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.guest-only').forEach(el => el.style.display = 'block');
-
-        // Redirect from protected pages
-        if (window.location.pathname.includes('library.html') || 
-            window.location.pathname.includes('upload.html')) {
-            window.location.href = 'login.html';
-        }
-    }
-
-    // Handle user registration
-    async function handleRegister(e) {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirm-password').value;
-
-        // Basic validation
-        if (password !== confirmPassword) {
-            showAlert('Passwords do not match', 'error');
-            return;
-        }
-
-        // Check if user exists
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const userExists = users.some(user => user.email === email || user.username === username);
-
-        if (userExists) {
-            showAlert('User with this email or username already exists', 'error');
-            return;
-        }
-
-        // Create new user
-        const newUser = {
-            id: generateId(),
-            username,
-            email,
-            password: hashPassword(password), // In a real app, use proper hashing
-            role: 'user',
-            createdAt: new Date().toISOString(),
-            library: []
+    // Expose methods to global scope
+    exposeMethods() {
+        window.playTrack = (trackId) => {
+            const track = this.state.library.find(t => t.id === trackId);
+            if (track) this.playTrack(track);
         };
-
-        // Save user
-        users.push(newUser);
-        localStorage.setItem('users', JSON.stringify(users));
-
-        // Log the user in
-        state.currentUser = newUser;
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
-
-        showAlert('Registration successful!', 'success');
-        setTimeout(() => {
-            window.location.href = 'library.html';
-        }, 1500);
-    }
-
-    // Handle user login
-    async function handleLogin(e) {
-        e.preventDefault();
-        
-        const emailOrUsername = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-
-        // Get users from localStorage
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-
-        // Find user by email or username
-        const user = users.find(user => 
-            user.email === emailOrUsername || user.username === emailOrUsername
-        );
-
-        if (!user || user.password !== hashPassword(password)) {
-            showAlert('Invalid credentials', 'error');
-            return;
-        }
-
-        // Log the user in
-        state.currentUser = user;
-        state.isAdmin = user.role === 'admin';
-        localStorage.setItem('currentUser', JSON.stringify(user));
-
-        showAlert('Login successful!', 'success');
-        setTimeout(() => {
-            window.location.href = user.role === 'admin' ? 'admin/dashboard.html' : 'library.html';
-        }, 1500);
-    }
+    },
 
     // Handle music upload
-    async function handleUpload(e) {
+    async handleUpload(e) {
         e.preventDefault();
         
-        const title = document.getElementById('song-title').value;
-        const artist = document.getElementById('song-artist').value;
-        const album = document.getElementById('song-album').value;
-        const genre = document.getElementById('song-genre').value;
-        const fileInput = document.getElementById('song-file');
-        const coverInput = document.getElementById('song-cover');
-
-        if (!fileInput.files[0]) {
-            showAlert('Please select an audio file', 'error');
-            return;
-        }
-
-        // Create a preview URL for the audio file
-        const audioUrl = URL.createObjectURL(fileInput.files[0]);
-        let coverUrl = 'assets/images/album-placeholder.jpg';
-
-        // Process cover art if provided
-        if (coverInput.files[0]) {
-            coverUrl = URL.createObjectURL(coverInput.files[0]);
-        }
-
-        // Create new track object
-        const newTrack = {
-            id: generateId(),
-            title,
-            artist,
-            album: album || 'Unknown Album',
-            genre: genre || 'Other',
-            audioUrl,
-            coverUrl,
-            duration: 0, // Will be updated when loaded
-            uploader: state.currentUser.id,
-            uploadDate: new Date().toISOString(),
-            status: state.isAdmin ? 'approved' : 'pending',
-            plays: 0
-        };
-
-        // Add to library
-        state.musicLibrary.push(newTrack);
-        localStorage.setItem('musicLibrary', JSON.stringify(state.musicLibrary));
-
-        // If admin, add directly to user's library
-        if (state.isAdmin) {
-            addToUserLibrary(newTrack.id);
-        }
-
-        showAlert('Music uploaded successfully!', 'success');
-        closeUploadModal();
+        if (this.state.isLoading) return;
+        this.state.isLoading = true;
         
-        if (window.location.pathname.includes('library.html')) {
-            renderMusicLibrary();
-        }
-    }
-
-    // Render music library
-    function renderMusicLibrary() {
-        if (!elements.libraryGrid) return;
-
-        // Clear existing content
-        elements.libraryGrid.innerHTML = '';
-
-        // Filter tracks based on user role
-        let tracksToDisplay = [];
-        if (state.isAdmin) {
-            tracksToDisplay = state.musicLibrary;
-        } else {
-            tracksToDisplay = state.musicLibrary.filter(track => 
-                track.status === 'approved' || track.uploader === state.currentUser.id
-            );
-        }
-
-        if (tracksToDisplay.length === 0) {
-            elements.libraryGrid.innerHTML = `
-                <div class="empty-library">
-                    <i class="fas fa-music"></i>
-                    <h3>Your library is empty</h3>
-                    <p>Upload your first song to get started</p>
-                    <button class="btn-primary" id="empty-upload-btn">
-                        <i class="fas fa-cloud-upload-alt"></i> Upload Music
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('empty-upload-btn').addEventListener('click', openUploadModal);
+        const formData = new FormData(this.elements.uploadForm);
+        const audioFile = formData.get('song-file');
+        const validAudioTypes = ['audio/mpeg', 'audio/wav', 'audio/mp3'];
+        
+        if (!audioFile) {
+            this.showAlert('Please select an audio file', 'error');
+            this.state.isLoading = false;
             return;
         }
 
-        // Render each track
-        tracksToDisplay.forEach(track => {
-            const trackElement = document.createElement('div');
-            trackElement.className = 'music-item';
-            trackElement.innerHTML = `
-                <div class="album-cover">
-                    <img src="${track.coverUrl}" alt="${track.title}">
-                    <div class="play-overlay" data-id="${track.id}">
-                        <i class="fas fa-play"></i>
-                    </div>
-                </div>
-                <div class="track-info">
-                    <h4>${track.title}</h4>
-                    <p>${track.artist}</p>
-                    ${state.isAdmin ? `<span class="track-status ${track.status}">${track.status}</span>` : ''}
-                </div>
-                <div class="track-actions">
-                    <button class="btn-icon add-to-playlist" data-id="${track.id}" title="Add to playlist">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    ${track.uploader === state.currentUser.id || state.isAdmin ? `
-                    <button class="btn-icon delete-track" data-id="${track.id}" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    ` : ''}
-                </div>
-            `;
-            elements.libraryGrid.appendChild(trackElement);
+        if (!validAudioTypes.includes(audioFile.type)) {
+            this.showAlert('Only MP3/WAV files are supported', 'error');
+            this.state.isLoading = false;
+            return;
+        }
+
+        try {
+            // Create track object
+            const newTrack = {
+                id: Date.now().toString(),
+                title: formData.get('song-title') || audioFile.name.replace(/\.[^/.]+$/, ""),
+                artist: formData.get('song-artist') || 'Unknown Artist',
+                audioUrl: URL.createObjectURL(audioFile),
+                coverUrl: formData.get('song-cover') 
+                    ? URL.createObjectURL(formData.get('song-cover'))
+                    : this.generateCoverArt({ title: formData.get('song-title') || 'M' }),
+                duration: 0,
+                uploadDate: new Date().toISOString(),
+                plays: 0
+            };
+
+            // Add to library
+            this.state.library.push(newTrack);
+            this.saveLibrary();
+
+            this.showAlert('Upload successful!', 'success');
+            this.renderLibrary();
+            
+            // Reset form
+            this.elements.uploadForm.reset();
+        } catch (error) {
+            console.error('Upload error:', error);
+            this.showAlert('Upload failed. Please try again.', 'error');
+        } finally {
+            this.state.isLoading = false;
+        }
+    },
+
+    // Setup audio player
+    setupAudioPlayer() {
+        const { audioPlayer } = this.elements;
+        
+        audioPlayer.addEventListener('timeupdate', () => this.updateProgress());
+        audioPlayer.addEventListener('ended', () => this.playNext());
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            if (this.state.currentTrack) {
+                this.state.currentTrack.duration = audioPlayer.duration;
+                this.updateTimeDisplay();
+            }
         });
 
-        // Add event listeners to play buttons
-        document.querySelectorAll('.play-overlay').forEach(button => {
-            button.addEventListener('click', function() {
-                const trackId = this.getAttribute('data-id');
-                playTrack(trackId);
-            });
-        });
-
-        // Add event listeners to playlist buttons
-        document.querySelectorAll('.add-to-playlist').forEach(button => {
-            button.addEventListener('click', function() {
-                const trackId = this.getAttribute('data-id');
-                showPlaylistModal(trackId);
-            });
-        });
-
-        // Add event listeners to delete buttons
-        document.querySelectorAll('.delete-track').forEach(button => {
-            button.addEventListener('click', function() {
-                const trackId = this.getAttribute('data-id');
-                deleteTrack(trackId);
-            });
-        });
-    }
+        // Set initial volume
+        audioPlayer.volume = this.elements.volumeControl ? 
+            this.elements.volumeControl.value / 100 : 0.8;
+    },
 
     // Play a track
-    function playTrack(trackId) {
-        const track = state.musicLibrary.find(t => t.id === trackId);
-        if (!track) return;
-
-        state.currentTrack = track;
-        elements.audioPlayer.src = track.audioUrl;
-        elements.audioPlayer.play();
-        state.isPlaying = true;
-        updateNowPlayingUI();
-
-        // Update play count
-        track.plays++;
-        localStorage.setItem('musicLibrary', JSON.stringify(state.musicLibrary));
-    }
+    playTrack(track) {
+        console.log('Attempting to play:', track);
+        const { audioPlayer } = this.elements;
+        
+        // Pause current track if playing
+        if (this.state.isPlaying) {
+            audioPlayer.pause();
+        }
+        
+        // Load new track
+        this.state.currentTrack = track;
+        audioPlayer.src = track.audioUrl;
+        
+        audioPlayer.play()
+            .then(() => {
+                this.state.isPlaying = true;
+                this.updatePlayerUI();
+                this.incrementPlayCount(track.id);
+                console.log('Playback started successfully');
+            })
+            .catch(error => {
+                console.error('Playback error:', error);
+                this.showAlert(`Error playing track: ${error.message}`, 'error');
+            });
+    },
 
     // Toggle play/pause
-    function togglePlay() {
-        if (!state.currentTrack) {
-            // Play the first track if nothing is playing
-            if (state.musicLibrary.length > 0) {
-                playTrack(state.musicLibrary[0].id);
+    togglePlayback() {
+        const { audioPlayer } = this.elements;
+        
+        if (!this.state.currentTrack) {
+            if (this.state.library.length > 0) {
+                this.playTrack(this.state.library[0]);
             }
             return;
         }
-
-        if (state.isPlaying) {
-            elements.audioPlayer.pause();
+        
+        if (audioPlayer.paused) {
+            audioPlayer.play();
+            this.state.isPlaying = true;
         } else {
-            elements.audioPlayer.play();
+            audioPlayer.pause();
+            this.state.isPlaying = false;
         }
-        state.isPlaying = !state.isPlaying;
-        updatePlayButton();
-    }
-
-    // Update the play button icon
-    function updatePlayButton() {
-        if (!elements.playBtn) return;
         
-        elements.playBtn.innerHTML = state.isPlaying ? 
-            '<i class="fas fa-pause"></i>' : 
-            '<i class="fas fa-play"></i>';
-    }
+        this.updatePlayButton();
+    },
 
-    // Update the progress bar
-    function updateProgressBar() {
-        if (!elements.progressBar || !elements.audioPlayer) return;
+    // Update progress bar
+    updateProgress() {
+        const { audioPlayer, progressBar } = this.elements;
+        if (!progressBar || !audioPlayer.duration) return;
         
-        const { currentTime, duration } = elements.audioPlayer;
-        const progressPercent = (currentTime / duration) * 100;
-        elements.progressBar.style.width = `${progressPercent}%`;
-        
-        // Update time display
-        elements.currentTime.textContent = formatTime(currentTime);
-    }
+        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        progressBar.style.width = `${progress}%`;
+        this.updateTimeDisplay();
+    },
 
-    // Update track duration display
-    function updateTrackDuration() {
-        if (!elements.totalTime) return;
-        elements.totalTime.textContent = formatTime(elements.audioPlayer.duration);
-    }
+    // Seek to position in track
+    seekTrack(e) {
+        const { audioPlayer, progressContainer } = this.elements;
+        if (!audioPlayer.duration) return;
+        
+        const clickPosition = e.offsetX;
+        const progressBarWidth = progressContainer.clientWidth;
+        const seekPercentage = (clickPosition / progressBarWidth);
+        const seekTime = seekPercentage * audioPlayer.duration;
+        
+        audioPlayer.currentTime = seekTime;
+    },
+
+    // Set volume
+    setVolume(e) {
+        this.elements.audioPlayer.volume = e.target.value / 100;
+    },
+
+    // Play next track
+    playNext() {
+        if (!this.state.currentTrack) return;
+        
+        const currentIndex = this.state.library.findIndex(
+            track => track.id === this.state.currentTrack.id
+        );
+        
+        const nextIndex = (currentIndex + 1) % this.state.library.length;
+        this.playTrack(this.state.library[nextIndex]);
+    },
+
+    // Update player UI
+    updatePlayerUI() {
+        const { currentTrack } = this.state;
+        const { nowPlayingBar } = this.elements;
+        
+        if (!nowPlayingBar || !currentTrack) return;
+        
+        nowPlayingBar.querySelector('.now-playing-title').textContent = currentTrack.title;
+        nowPlayingBar.querySelector('.now-playing-artist').textContent = currentTrack.artist;
+        const coverImg = nowPlayingBar.querySelector('.now-playing-cover');
+        if (coverImg) {
+            coverImg.src = currentTrack.coverUrl;
+            coverImg.alt = `${currentTrack.title} cover art`;
+        }
+        
+        this.updatePlayButton();
+        this.updateTimeDisplay();
+    },
+
+    // Update time display
+    updateTimeDisplay() {
+        const { audioPlayer, currentTimeDisplay, totalTimeDisplay } = this.elements;
+        const { currentTrack } = this.state;
+        
+        if (!currentTrack || !currentTimeDisplay || !totalTimeDisplay) return;
+        
+        currentTimeDisplay.textContent = this.formatTime(audioPlayer.currentTime);
+        totalTimeDisplay.textContent = this.formatTime(
+            currentTrack.duration || audioPlayer.duration || 0
+        );
+    },
+
+    // Update play button
+    updatePlayButton() {
+        const { playBtn } = this.elements;
+        if (!playBtn) return;
+        
+        const icon = this.state.isPlaying ? 'pause' : 'play';
+        playBtn.innerHTML = `<i class="fas fa-${icon}"></i>`;
+    },
+
+    // Increment play count
+    incrementPlayCount(trackId) {
+        const track = this.state.library.find(t => t.id === trackId);
+        if (track) {
+            track.plays = (track.plays || 0) + 1;
+            this.saveLibrary();
+            this.renderLibrary(); // Update the play count display
+        }
+    },
+
+    // Render music library
+    renderLibrary() {
+        const { libraryContainer } = this.elements;
+        if (!libraryContainer) return;
+        
+        libraryContainer.innerHTML = this.state.library.length > 0
+            ? this.state.library.map(track => `
+                <div class="music-card" data-id="${track.id}">
+                    <div class="album-art" onclick="playTrack('${track.id}')">
+                        <img src="${track.coverUrl}" alt="${track.title} cover art">
+                        <div class="play-overlay"><i class="fas fa-play"></i></div>
+                    </div>
+                    <div class="track-info">
+                        <h3>${track.title}</h3>
+                        <p>${track.artist}</p>
+                        <div class="track-meta">
+                            <span>${this.formatDuration(track.duration)}</span>
+                            <span>${track.plays || 0} plays</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('')
+            : `<div class="empty-library">
+                <i class="fas fa-music"></i>
+                <p>Your library is empty</p>
+                <button class="btn-primary" onclick="document.getElementById('upload-btn').click()">
+                    Add Music
+                </button>
+               </div>`;
+    },
+
+    // Load library from localStorage
+    loadLibrary() {
+        try {
+            const library = localStorage.getItem('musicLibrary');
+            this.state.library = library ? JSON.parse(library) : [];
+            this.renderLibrary();
+        } catch (error) {
+            console.error('Error loading library:', error);
+            this.state.library = [];
+        }
+    },
+
+    // Save library to localStorage
+    saveLibrary() {
+        localStorage.setItem('musicLibrary', JSON.stringify(this.state.library));
+    },
+
+    // Generate placeholder cover art
+    generateCoverArt(track) {
+        const colors = ['#6c5b7b', '#c06c84', '#f8b195', '#355c7d'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        const letter = track?.title?.charAt(0).toUpperCase() || 'M';
+        
+        return `data:image/svg+xml;utf8,
+            <svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300' fill='${randomColor}'>
+                <rect width='300' height='300'/>
+                <text x='150' y='150' font-size='120' fill='white' 
+                    font-family='Arial' text-anchor='middle' dominant-baseline='middle'>
+                    ${letter}
+                </text>
+            </svg>`;
+    },
 
     // Format time (seconds to MM:SS)
-    function formatTime(seconds) {
+    formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    }
+    },
 
-    // Play next track
-    function playNextTrack() {
-        if (!state.currentTrack) return;
-        
-        const currentIndex = state.musicLibrary.findIndex(t => t.id === state.currentTrack.id);
-        const nextIndex = (currentIndex + 1) % state.musicLibrary.length;
-        playTrack(state.musicLibrary[nextIndex].id);
-    }
-
-    // Set volume
-    function setVolume() {
-        elements.audioPlayer.volume = elements.volumeSlider.value / 100;
-    }
-
-    // Update now playing UI
-    function updateNowPlayingUI() {
-        if (!state.currentTrack || !elements.nowPlayingBar) return;
-        
-        const nowPlayingInfo = elements.nowPlayingBar.querySelector('.track-info');
-        nowPlayingInfo.querySelector('.track-title').textContent = state.currentTrack.title;
-        nowPlayingInfo.querySelector('.track-artist').textContent = state.currentTrack.artist;
-        
-        const coverImg = elements.nowPlayingBar.querySelector('.now-playing-cover');
-        coverImg.src = state.currentTrack.coverUrl;
-        
-        updatePlayButton();
-    }
-
-    // Open upload modal
-    function openUploadModal() {
-        if (!state.currentUser) {
-            window.location.href = 'login.html';
-            return;
-        }
-        
-        elements.uploadModal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
-
-    // Close upload modal
-    function closeUploadModal() {
-        elements.uploadModal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        elements.uploadForm.reset();
-        document.getElementById('file-name').textContent = 'No file selected';
-    }
-
-    // Show playlist modal
-    function showPlaylistModal(trackId) {
-        // Implementation for adding to playlist
-    }
-
-    // Delete a track
-    function deleteTrack(trackId) {
-        if (!confirm('Are you sure you want to delete this track?')) return;
-        
-        state.musicLibrary = state.musicLibrary.filter(track => track.id !== trackId);
-        localStorage.setItem('musicLibrary', JSON.stringify(state.musicLibrary));
-        
-        if (state.currentTrack?.id === trackId) {
-            // If deleting currently playing track, stop playback
-            elements.audioPlayer.pause();
-            elements.audioPlayer.src = '';
-            state.currentTrack = null;
-            state.isPlaying = false;
-            updateNowPlayingUI();
-        }
-        
-        renderMusicLibrary();
-        showAlert('Track deleted successfully', 'success');
-    }
-
-    // Add track to user's library
-    function addToUserLibrary(trackId) {
-        if (!state.currentUser.library.includes(trackId)) {
-            state.currentUser.library.push(trackId);
-            
-            // Update user in localStorage
-            const users = JSON.parse(localStorage.getItem('users'));
-            const userIndex = users.findIndex(u => u.id === state.currentUser.id);
-            if (userIndex !== -1) {
-                users[userIndex] = state.currentUser;
-                localStorage.setItem('users', JSON.stringify(users));
-                localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
-            }
-        }
-    }
-
-    // Toggle password visibility
-    function togglePasswordVisibility(e) {
-        const button = e.target.closest('.toggle-password');
-        const input = button.previousElementSibling;
-        
-        if (input.type === 'password') {
-            input.type = 'text';
-            button.innerHTML = '<i class="fas fa-eye-slash"></i>';
-        } else {
-            input.type = 'password';
-            button.innerHTML = '<i class="fas fa-eye"></i>';
-        }
-    }
-
-    // Display selected file name
-    function displayFileName(e) {
-        const fileName = e.target.files[0]?.name || 'No file selected';
-        document.getElementById('file-name').textContent = fileName;
-    }
+    // Format duration (alias for formatTime)
+    formatDuration(seconds) {
+        return this.formatTime(seconds);
+    },
 
     // Show alert message
-    function showAlert(message, type) {
-        // Implementation for showing alert messages
-        alert(`${type.toUpperCase()}: ${message}`); // Simplified for this example
-    }
+    showAlert(message, type) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type}`;
+        alert.textContent = message;
+        document.body.appendChild(alert);
+        
+        setTimeout(() => {
+            alert.remove();
+        }, 3000);
+    },
 
-    // Generate unique ID
-    function generateId() {
-        return Math.random().toString(36).substr(2, 9);
+    // Check authentication state
+    checkAuthState() {
+        try {
+            this.state.currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        } catch (error) {
+            console.error('Error checking auth state:', error);
+            this.state.currentUser = null;
+        }
     }
-
-    // Simple password hashing (for demo only - use proper hashing in production)
-    function hashPassword(password) {
-        return password.split('').reverse().join('') + password.length;
-    }
-
-    // Public API
-    return {
-        init,
-        state,
-        playTrack,
-        togglePlay
-    };
-})();
+};
 
 // Initialize the app when DOM is loaded
-document.addEventListener('DOMContentLoaded', Melodify.init);
+document.addEventListener('DOMContentLoaded', () => MusicApp.init());
 
-// Admin Module (for admin functionality)
-const AdminModule = (function() {
-    // Admin-specific functions
-    function approveTrack(trackId) {
-        const track = Melodify.state.musicLibrary.find(t => t.id === trackId);
-        if (track) {
-            track.status = 'approved';
-            localStorage.setItem('musicLibrary', JSON.stringify(Melodify.state.musicLibrary));
-            Melodify.showAlert('Track approved', 'success');
-            return true;
-        }
-        return false;
-    }
 
-    function rejectTrack(trackId) {
-        Melodify.state.musicLibrary = Melodify.state.musicLibrary.filter(t => t.id !== trackId);
-        localStorage.setItem('musicLibrary', JSON.stringify(Melodify.state.musicLibrary));
-        Melodify.showAlert('Track rejected', 'success');
-        return true;
-    }
 
-    function suspendUser(userId) {
-        // Implementation for suspending users
-    }
 
-    return {
-        approveTrack,
-        rejectTrack,
-        suspendUser
-    };
-})();
-
-// Playlist Module
-const PlaylistModule = (function() {
-    function createPlaylist(name, isPublic = false) {
-        const newPlaylist = {
-            id: Melodify.generateId(),
-            name,
-            isPublic,
-            creator: Melodify.state.currentUser.id,
-            tracks: [],
-            createdAt: new Date().toISOString()
-        };
-
-        Melodify.state.playlists.push(newPlaylist);
-        localStorage.setItem('playlists', JSON.stringify(Melodify.state.playlists));
-        return newPlaylist;
-    }
-
-    function addToPlaylist(playlistId, trackId) {
-        const playlist = Melodify.state.playlists.find(p => p.id === playlistId);
-        if (playlist) {
-            if (!playlist.tracks.includes(trackId)) {
-                playlist.tracks.push(trackId);
-                localStorage.setItem('playlists', JSON.stringify(Melodify.state.playlists));
-                return true;
-            }
-        }
-        return false;
-    }
-
-    return {
-        createPlaylist,
-        addToPlaylist
-    };
-})();
+// Mobile menu functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const hamburger = document.querySelector('.hamburger');
+    const navMenu = document.querySelector('.nav-menu');
+    
+    hamburger?.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navMenu.classList.toggle('active');
+    });
+    
+    // Close menu when clicking links
+    document.querySelectorAll('.nav-menu a').forEach(link => {
+        link.addEventListener('click', () => {
+            hamburger?.classList.remove('active');
+            navMenu?.classList.remove('active');
+        });
+    });
+});
